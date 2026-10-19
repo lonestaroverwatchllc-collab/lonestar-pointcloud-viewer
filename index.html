@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Robstown LiDAR | Lone Star Overwatch</title>
+<link rel="stylesheet" href="https://potree.org/potree/build/potree/potree.css">
+<link rel="stylesheet" href="https://potree.org/potree/libs/jquery-ui/jquery-ui.min.css">
+<link rel="stylesheet" href="https://potree.org/potree/libs/openlayers3/ol.css">
+<link rel="stylesheet" href="https://potree.org/potree/libs/spectrum/spectrum.css">
+<link rel="stylesheet" href="https://potree.org/potree/libs/jstree/themes/mixed/style.css">
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#091726;font-family:Arial,sans-serif}
+#viewer{position:absolute;inset:0;top:66px}#potree_render_area{position:absolute;inset:0}#potree_sidebar_container{position:absolute}
+header{position:absolute;top:0;left:0;right:0;height:66px;background:#071c31;border-bottom:3px solid #c82031;color:#fff;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 22px;box-sizing:border-box;gap:12px}
+strong{font-size:18px;letter-spacing:.6px}small{display:block;color:#c8d6e3;margin-top:4px;font-size:12px}
+#status{font-size:12px;background:#18334c;border-radius:8px;padding:9px 12px;max-width:42%;line-height:1.4}
+@media(max-width:650px){strong{font-size:13px}small{font-size:10px}#status{max-width:38%;font-size:10px;padding:6px}}
+</style>
+</head>
+<body>
+<header><div><strong>LONE STAR OVERWATCH</strong><small>450 Industrial Blvd, Robstown, TX · LiDAR Viewer</small></div><div id="status">Starting viewer…</div></header>
+<div id="viewer"><div id="potree_render_area"></div><div id="potree_sidebar_container"></div></div>
+<script src="https://potree.org/potree/libs/jquery/jquery-3.1.1.min.js"></script>
+<script src="https://potree.org/potree/libs/spectrum/spectrum.js"></script>
+<script src="https://potree.org/potree/libs/jquery-ui/jquery-ui.min.js"></script>
+<script src="https://potree.org/potree/libs/other/BinaryHeap.js"></script>
+<script src="https://potree.org/potree/libs/tween/tween.min.js"></script>
+<script src="https://potree.org/potree/libs/d3/d3.js"></script>
+<script src="https://potree.org/potree/libs/proj4/proj4.js"></script>
+<script src="https://potree.org/potree/libs/openlayers3/ol.js"></script>
+<script src="https://potree.org/potree/libs/i18next/i18next.js"></script>
+<script src="https://potree.org/potree/libs/jstree/jstree.js"></script>
+<script src="https://potree.org/potree/build/potree/potree.js"></script>
+<script src="https://potree.org/potree/libs/plasio/js/laslaz.js"></script>
+<script>
+const status = document.getElementById('status');
+const metadata='https://pub-a2a2794df88b4f4aaf6aba17d9a6faf1.r2.dev/450-Industrial-Blvd/metadata.json';
+try {
+ if(!window.Potree) throw new Error('Potree library not available');
+ const viewer = new Potree.Viewer(document.getElementById('potree_render_area'));
+ viewer.setEDLEnabled(true); viewer.setFOV(60); viewer.setPointBudget(1500000);
+ viewer.setBackground('gradient'); window.viewer=viewer;
+ status.textContent='Loading point cloud…';
+ Potree.loadPointCloud(metadata,'450 Industrial Blvd',e=>{
+   viewer.scene.addPointCloud(e.pointcloud);
+   const a=e.pointcloud.material.pointAttributes?.attributes?.map(x=>x.name)||[];
+   const preferred=['rgba','rgb','RGB','color'];
+   for (const p of preferred){if(a.includes(p)){e.pointcloud.material.activeAttributeName=p;break;}}
+   viewer.fitToScreen();status.textContent='Point cloud loaded · drag to rotate · scroll to zoom';
+ });
+ viewer.loadGUI(()=>{viewer.setLanguage('en');});
+ setTimeout(()=>{if(status.textContent.includes('Loading'))status.textContent='Still loading. If blank, check CORS and browser console.'},12000);
+} catch(err){status.textContent='Viewer error: '+err.message;console.error(err)}
+</script>
+</body>
+</html>
